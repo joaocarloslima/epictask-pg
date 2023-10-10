@@ -27,7 +27,7 @@
         <h2>Cadastrar Tarefa</h2>
 
         <div class="card">
-            <form action="/task" method="post" th:object="${task}">
+            <form th:action="${'/task'}" method="post" th:object="${task}">
                 <div class="card-content">
                     <div class="input-field">
                         <input type="text" th:field="*{title}" th:classappend="${#fields.hasErrors('title')} ? invalid">
