@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import br.com.fiap.epictask.user.User;
 import jakarta.validation.Valid;
 
 @Controller
@@ -27,7 +28,7 @@ public class TaskController {
     MessageSource message;
 
     @GetMapping
-    public String index(Model model, @AuthenticationPrincipal OAuth2User user){
+    public String index(Model model, @AuthenticationPrincipal OAuth2User user) {
         model.addAttribute("username", user.getAttribute("name"));
         model.addAttribute("avatar_url", user.getAttribute("avatar_url"));
         model.addAttribute("tasks", service.findAll());
@@ -35,31 +36,57 @@ public class TaskController {
     }
 
     @GetMapping("/delete/{id}")
-    public String delete(@PathVariable Long id, RedirectAttributes redirect){
-        if(service.delete(id)){
-            redirect.addFlashAttribute("success", getMessage("task.delete.success") );
-        }else{
+    public String delete(@PathVariable Long id, RedirectAttributes redirect) {
+        if (service.delete(id)) {
+            redirect.addFlashAttribute("success", getMessage("task.delete.success"));
+        } else {
             redirect.addFlashAttribute("error", getMessage("task.notfound"));
         }
         return "redirect:/task";
     }
-    
+
     @GetMapping("new")
-    public String form(Task task){
+    public String form(Task task, Model model, @AuthenticationPrincipal OAuth2User user) {
+        model.addAttribute("username", user.getAttribute("name"));
+        model.addAttribute("avatar_url", user.getAttribute("avatar_url"));
         return "task/form";
     }
-    
+
     @PostMapping
-    public String create(@Valid Task task, BindingResult result, RedirectAttributes redirect){
-        if (result.hasErrors()) return "task/form";
+    public String create(@Valid Task task, BindingResult result, RedirectAttributes redirect) {
+        if (result.hasErrors())
+            return "task/form";
         service.save(task);
         redirect.addFlashAttribute("success", getMessage("task.create.success"));
         return "redirect:/task";
     }
 
-    private String getMessage(String code){
+    private String getMessage(String code) {
         return message.getMessage(code, null, LocaleContextHolder.getLocale());
     }
-    
-}
 
+    @GetMapping("dec/{id}")
+    public String decrement(@PathVariable Long id) {
+        service.decrement(id);
+        return "redirect:/task";
+    }
+
+    @GetMapping("inc/{id}")
+    public String increment(@PathVariable Long id) {
+        service.increment(id);
+        return "redirect:/task";
+    }
+
+    @GetMapping("catch/{id}")
+    public String catchTask(@PathVariable Long id, @AuthenticationPrincipal OAuth2User user) {
+        service.catchTask(id, User.convert(user));
+        return "redirect:/task";
+    }
+    
+    @GetMapping("drop/{id}")
+    public String dropTask(@PathVariable Long id, @AuthenticationPrincipal OAuth2User user) {
+        service.dropTask(id, User.convert(user));
+        return "redirect:/task";
+    }
+
+}
